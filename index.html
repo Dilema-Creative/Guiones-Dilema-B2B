@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dilema — Generador de Contenido B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface2: #181818;
+  --border: #222222;
+  --border2: #2a2a2a;
+  --text: #f0f0f0;
+  --muted: #666666;
+  --muted2: #444444;
+  --accent: #e8ff3c;
+  --accent2: #c8e000;
+  --red: #ff4444;
+  --blue: #3c8bff;
+  --green: #3cff8b;
+  --orange: #ff8c3c;
+  --purple: #9b3cff;
+  --teal: #3cffe0;
+  --r: 8px;
+  --r2: 12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+/* HEADER */
+.header{padding:1.5rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);z-index:100}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:0.02em;display:flex;align-items:center;gap:10px}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;display:inline-block}
+.header-tag{font-size:12px;color:var(--muted);border:1px solid var(--border2);border-radius:99px;padding:4px 12px}
+
+/* TABS */
+.tabs-wrap{padding:1.5rem 2rem 0;display:flex;gap:4px}
+.tab{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;padding:9px 18px;border-radius:var(--r);border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;letter-spacing:0.02em}
+.tab:hover{color:var(--text);border-color:var(--border2)}
+.tab.on{background:var(--accent);color:#000;border-color:var(--accent)}
+
+/* PANELS */
+.panel{display:none;padding:1.5rem 2rem 3rem}
+.panel.on{display:block}
+
+/* GENERADOR */
+.gen-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+@media(max-width:640px){.gen-grid{grid-template-columns:1fr}}
+.gen-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem}
+.gen-card-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;display:flex;align-items:center;gap:6px}
+.gen-card-label span{width:6px;height:6px;border-radius:50%;display:inline-block}
+.lc{background:var(--accent)}
+.lf{background:var(--blue)}
+.gen-card-val{font-size:15px;color:var(--text);line-height:1.55;min-height:48px}
+.gen-card-sub{font-size:12px;color:var(--muted);margin-top:8px}
+.cat-badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;margin-top:6px}
+
+.btn-gen{display:inline-flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.03em;padding:12px 24px;background:var(--accent);color:#000;border:none;border-radius:var(--r);cursor:pointer;transition:all .15s}
+.btn-gen:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-gen:active{transform:scale(0.98)}
+.btn-gen svg{width:16px;height:16px}
+
+.btn-guion{display:inline-flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.03em;padding:12px 24px;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;transition:all .15s;margin-left:8px}
+.btn-guion:hover{border-color:var(--accent);color:var(--accent)}
+.btn-guion:disabled{opacity:0.3;cursor:not-allowed}
+
+.btn-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:0.5rem}
+
+/* GUION OUTPUT */
+.guion-wrap{margin-top:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.guion-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.guion-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:8px}
+.guion-title-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.guion-title-dot.done{animation:none;background:var(--green)}
+.guion-body{padding:1.5rem;font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;min-height:120px}
+.guion-body.loading{color:var(--muted)}
+.btn-copy{font-size:12px;font-weight:500;padding:6px 14px;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--muted);cursor:pointer;transition:all .15s}
+.btn-copy:hover{color:var(--text);border-color:var(--border2)}
+.btn-copy.copied{color:var(--green);border-color:var(--green)}
+
+/* SEARCH + FILTER */
+.search-row{display:flex;gap:8px;margin-bottom:1rem;align-items:center}
+.search{flex:1;padding:9px 13px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif}
+.search:focus{outline:none;border-color:var(--border2)}
+.search::placeholder{color:var(--muted2)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.pill{padding:5px 12px;border-radius:99px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;font-family:'DM Sans',sans-serif}
+.pill:hover{color:var(--text);border-color:var(--border2)}
+.pill.on{font-weight:500}
+.p-dolor.on{background:#300;color:#ff8080;border-color:#600}
+.p-educacion.on{background:#030;color:#80ff80;border-color:#060}
+.p-estrategia.on{background:#001a33;color:#80b4ff;border-color:#003366}
+.p-credibilidad.on{background:#1a1000;color:#ffd080;border-color:#332000}
+.p-mentalidad.on{background:#1a001a;color:#d080ff;border-color:#330033}
+.p-herramientas.on{background:#001a1a;color:#80ffe0;border-color:#003333}
+.p-sector.on{background:#1a0d00;color:#ffb880;border-color:#331a00}
+.p-edu.on{background:#030;color:#80ff80;border-color:#060}
+.p-hook.on{background:#1a1000;color:#ffd080;border-color:#332000}
+.p-conv.on{background:#1a001a;color:#d080ff;border-color:#330033}
+.p-lista.on{background:#001a33;color:#80b4ff;border-color:#003366}
+.p-narrativo.on{background:#300;color:#ff8080;border-color:#600}
+.p-visual.on{background:#001a1a;color:#80ffe0;border-color:#003333}
+.counter{font-size:12px;color:var(--muted);margin-bottom:0.75rem}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;display:flex;gap:10px;align-items:flex-start;transition:border-color .15s;cursor:default}
+.item-card:hover{border-color:var(--border2)}
+.item-num{font-size:11px;color:var(--muted2);min-width:24px;font-weight:600;font-family:'Syne',sans-serif;padding-top:2px}
+.item-body{flex:1}
+.item-txt{font-size:13px;color:var(--text);line-height:1.5}
+.item-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;margin-top:5px;font-weight:500}
+.it-dolor{background:#300;color:#ff8080}
+.it-educacion{background:#030;color:#80ff80}
+.it-estrategia{background:#001a33;color:#80b4ff}
+.it-credibilidad{background:#1a1000;color:#ffd080}
+.it-mentalidad{background:#1a001a;color:#d080ff}
+.it-herramientas{background:#001a1a;color:#80ffe0}
+.it-sector{background:#1a0d00;color:#ffb880}
+.it-edu{background:#030;color:#80ff80}
+.it-hook{background:#1a1000;color:#ffd080}
+.it-conv{background:#1a001a;color:#d080ff}
+.it-lista{background:#001a33;color:#80b4ff}
+.it-narrativo{background:#300;color:#ff8080}
+.it-visual{background:#001a1a;color:#80ffe0}
+
+.section-head{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:0.5rem 0 0.5rem;margin-top:0.75rem;border-bottom:1px solid var(--border);margin-bottom:0.75rem}
+.section-head:first-child{margin-top:0}
+.empty{font-size:14px;color:var(--muted);padding:2rem 0;text-align:center}
+
+/* EMPTY STATE */
+.gen-empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.gen-empty-icon{font-size:2.5rem;margin-bottom:1rem;opacity:0.3}
+.gen-empty-text{font-size:14px}
+
+/* CURSOR */
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);vertical-align:text-bottom;animation:blink .7s steps(1) infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><span class="logo-dot"></span>Dilema Creative</div>
+  <div class="header-tag">Generador de Contenido B2B</div>
+</div>
+
+<div class="tabs-wrap">
+  <button class="tab on" onclick="switchTab('gen')">Generador</button>
+  <button class="tab" onclick="switchTab('conceptos')">Conceptos <span style="opacity:.5;font-weight:400">(100)</span></button>
+  <button class="tab" onclick="switchTab('formatos')">Formatos <span style="opacity:.5;font-weight:400">(50)</span></button>
+</div>
+
+<!-- PANEL GENERADOR -->
+<div id="p-gen" class="panel on">
+  <div class="gen-grid">
+    <div class="gen-card">
+      <div class="gen-card-label"><span class="lc"></span>Concepto</div>
+      <div class="gen-card-val" id="g-c">Presioná "Generar idea" para arrancar</div>
+      <div class="gen-card-sub" id="g-cn"></div>
+    </div>
+    <div class="gen-card">
+      <div class="gen-card-label"><span class="lf"></span>Formato</div>
+      <div class="gen-card-val" id="g-f">—</div>
+      <div class="gen-card-sub" id="g-fn"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-gen" onclick="generar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+      Generar idea
+    </button>
+    <button class="btn-guion" id="btn-guion" onclick="generarGuion()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+      Generar guion con IA
+    </button>
+  </div>
+
+  <div id="guion-section" style="display:none" class="guion-wrap">
+    <div class="guion-header">
+      <div class="guion-title">
+        <span class="guion-title-dot" id="guion-dot"></span>
+        Guion generado
+      </div>
+      <button class="btn-copy" id="btn-copy" onclick="copiarGuion()">Copiar</button>
+    </div>
+    <div class="guion-body" id="guion-output"></div>
+  </div>
+</div>
+
+<!-- PANEL CONCEPTOS -->
+<div id="p-conceptos" class="panel">
+  <div class="search-row">
+    <input class="search" type="text" placeholder="Buscar concepto..." oninput="filterC(this.value)"/>
+  </div>
+  <div class="filters" id="cf"></div>
+  <div class="counter" id="cc">100 conceptos</div>
+  <div id="cg"></div>
+</div>
+
+<!-- PANEL FORMATOS -->
+<div id="p-formatos" class="panel">
+  <div class="search-row">
+    <input class="search" type="text" placeholder="Buscar formato..." oninput="filterF(this.value)"/>
+  </div>
+  <div class="filters" id="ff"></div>
+  <div class="counter" id="fc">50 formatos</div>
+  <div id="fg"></div>
+</div>
+
+<script>
+const C=[
+  {n:1,t:"El boca en boca ya no alcanza y las empresas industriales lo están sintiendo tarde",cat:"dolor"},
+  {n:2,t:"Tu competidor de la vuelta empieza a robar clientes sin que te enterás",cat:"dolor"},
+  {n:3,t:"Llevás 30 años en el mercado y un pibe de 5 años te come terreno en Google",cat:"dolor"},
+  {n:4,t:"Por qué las empresas con décadas de trayectoria tienen menos visibilidad que un emprendimiento nuevo",cat:"dolor"},
+  {n:5,t:"El vendedor estrella se va y te lleva los contactos: el problema de depender de personas",cat:"dolor"},
+  {n:6,t:"Mandaste un presupuesto y nunca más supiste nada: el seguimiento que nadie hace",cat:"dolor"},
+  {n:7,t:"Tenés productos mejores que tu competencia y aun así perdés licitaciones",cat:"dolor"},
+  {n:8,t:"Por qué tu empresa no aparece cuando alguien busca lo que vendés",cat:"dolor"},
+  {n:9,t:"Subís contenido a redes y nadie lo ve: el problema de publicar sin estrategia",cat:"dolor"},
+  {n:10,t:"Invertís en pauta y no sabés si está funcionando o tirando plata",cat:"dolor"},
+  {n:11,t:"Tu agencia no te contesta y cuando lo hace no entendés lo que te dice",cat:"dolor"},
+  {n:12,t:"Los reportes que te mandan no sirven para tomar ninguna decisión",cat:"dolor"},
+  {n:13,t:"Pagás marketing hace 6 meses y todavía no podés medir si sirvió",cat:"dolor"},
+  {n:14,t:"No encontrás la manera de explicarle a tu cliente qué hacés y por qué sos mejor",cat:"dolor"},
+  {n:15,t:"Querés vender más pero no sabés dónde están tus clientes potenciales en internet",cat:"dolor"},
+  {n:16,t:"Tu equipo comercial pierde tiempo con prospectos que nunca van a comprar",cat:"dolor"},
+  {n:17,t:"Tenés casos de éxito increíbles y nunca los mostrás",cat:"dolor"},
+  {n:18,t:"Tu sitio web tiene 10 años y espantás más clientes de los que atraés",cat:"dolor"},
+  {n:19,t:"Nadie en tu empresa sabe qué hace el área de marketing ni si sirve para algo",cat:"dolor"},
+  {n:20,t:"Querés resultados en 30 días en negocios con ciclos de venta de 6 meses",cat:"dolor"},
+  {n:21,t:"Falta de paciencia: el error que hace que la mayoría abandone antes de ver resultados",cat:"dolor"},
+  {n:22,t:"No sabés cómo hablarle a tu cliente ideal en digital sin sonar raro o genérico",cat:"dolor"},
+  {n:23,t:"Querés vender productos caros pero tu presencia digital no acompaña el precio",cat:"dolor"},
+  {n:24,t:"Tu agencia no propone nada nuevo: siempre la misma receta",cat:"dolor"},
+  {n:25,t:"Pasaron semanas y no sabés nada de tu inversión publicitaria",cat:"dolor"},
+  {n:26,t:"Cómo se toma una decisión de compra en una empresa industrial hoy en 2025",cat:"educacion"},
+  {n:27,t:"Por qué el B2B no puede usar las mismas estrategias que una tienda de ropa",cat:"educacion"},
+  {n:28,t:"Qué es un ciclo de venta largo y cómo el marketing tiene que acompañarlo",cat:"educacion"},
+  {n:29,t:"La diferencia entre generar marca y generar leads: cuándo hacer cada una",cat:"educacion"},
+  {n:30,t:"Qué significa realmente tener presencia digital para una empresa industrial",cat:"educacion"},
+  {n:31,t:"Por qué Google es el vendedor más barato que podés contratar",cat:"educacion"},
+  {n:32,t:"Cómo funciona la segmentación en Meta: no es magia, es estrategia",cat:"educacion"},
+  {n:33,t:"Qué es el funnel de ventas y por qué tu empresa industrial necesita uno",cat:"educacion"},
+  {n:34,t:"La diferencia entre pauta en Meta, Google y Mercado Libre: cuándo usar cada una",cat:"educacion"},
+  {n:35,t:"Por qué el email marketing sigue siendo la herramienta con mejor ROI en B2B",cat:"educacion"},
+  {n:36,t:"Qué es el remarketing y por qué tus competidores lo están usando contra vos",cat:"educacion"},
+  {n:37,t:"Cómo medir si una campaña realmente funcionó más allá del like y la impresión",cat:"educacion"},
+  {n:38,t:"Qué es un lead calificado y cómo diferenciarlo de uno que nunca va a comprar",cat:"educacion"},
+  {n:39,t:"Por qué el contenido orgánico y la pauta tienen que trabajar juntos",cat:"educacion"},
+  {n:40,t:"Qué hace exactamente una agencia de marketing digital y cómo elegir una buena",cat:"educacion"},
+  {n:41,t:"La diferencia entre branding e identidad visual: por qué importa en B2B",cat:"educacion"},
+  {n:42,t:"Cómo construir autoridad digital en un nicho industrial desde cero",cat:"educacion"},
+  {n:43,t:"Qué es una estrategia omnicanal y por qué las empresas industriales la necesitan",cat:"educacion"},
+  {n:44,t:"Por qué aparecer primero en Google no es suerte: es trabajo técnico",cat:"educacion"},
+  {n:45,t:"Cómo el contenido en redes puede acortar el ciclo de venta de tu empresa",cat:"educacion"},
+  {n:46,t:"El modelo tradicional de ventas B2B se está rompiendo: qué hacer al respecto",cat:"estrategia"},
+  {n:47,t:"Cómo construir un sistema de captación de clientes que no dependa de un vendedor",cat:"estrategia"},
+  {n:48,t:"La estrategia que usan las empresas industriales que más crecen en Argentina",cat:"estrategia"},
+  {n:49,t:"Por qué antes de pautar hay que tener claro el mensaje: el error que más plata cuesta",cat:"estrategia"},
+  {n:50,t:"Cómo armar un contenido que le hable directo al tomador de decisiones de una empresa",cat:"estrategia"},
+  {n:51,t:"La secuencia correcta para arrancar con marketing digital en una empresa industrial",cat:"estrategia"},
+  {n:52,t:"Qué plataforma priorizar primero si sos una empresa B2B con presupuesto limitado",cat:"estrategia"},
+  {n:53,t:"Cómo usar LinkedIn, Instagram y TikTok de forma distinta para el mismo negocio",cat:"estrategia"},
+  {n:54,t:"El tipo de contenido que genera consultas en empresas industriales: lo que funciona de verdad",cat:"estrategia"},
+  {n:55,t:"Cómo convertir un caso de éxito en 10 piezas de contenido distintas",cat:"estrategia"},
+  {n:56,t:"Por qué el historial de una empresa de 30 años es su mayor activo de marketing y nadie lo usa",cat:"estrategia"},
+  {n:57,t:"Cómo armar un presupuesto de marketing realista para una empresa industrial",cat:"estrategia"},
+  {n:58,t:"La estrategia de contenido en pizarra que funciona para explicar procesos complejos",cat:"estrategia"},
+  {n:59,t:"Cómo hacer seguimiento de leads sin parecer desesperado ni invasivo",cat:"estrategia"},
+  {n:60,t:"El mapa de contenido para cada etapa del ciclo de venta B2B",cat:"estrategia"},
+  {n:61,t:"Cómo una empresa de insumos industriales pasó del boca en boca a generar leads online",cat:"credibilidad"},
+  {n:62,t:"Antes y después: qué cambia cuando una empresa industrial trabaja bien su presencia digital",cat:"credibilidad"},
+  {n:63,t:"El caso del cliente que dudaba de la pauta y los resultados que lo hicieron cambiar de opinión",cat:"credibilidad"},
+  {n:64,t:"Por qué mostramos los números reales de nuestros clientes y no solo los testimonios",cat:"credibilidad"},
+  {n:65,t:"Lo que aprendimos trabajando con empresas industriales que ningún libro de marketing enseña",cat:"credibilidad"},
+  {n:66,t:"El error de comunicación más frecuente en empresas B2B argentinas",cat:"credibilidad"},
+  {n:67,t:"Cómo una empresa con 40 años de trayectoria empezó a competir en digital",cat:"credibilidad"},
+  {n:68,t:"Resultados reales: cuánto tarda en verse el retorno en una campaña B2B bien hecha",cat:"credibilidad"},
+  {n:69,t:"Por qué nuestros clientes industriales no nos piden más likes sino más consultas",cat:"credibilidad"},
+  {n:70,t:"Lo que ninguna agencia generalista entiende del sector industrial",cat:"credibilidad"},
+  {n:71,t:"Si tu empresa no está en digital, no existe para el 80% de tus clientes potenciales",cat:"mentalidad"},
+  {n:72,t:"El marketing no es un gasto: es la única inversión que se mide en ventas",cat:"mentalidad"},
+  {n:73,t:"Por qué las empresas industriales que más invierten en marketing en crisis son las que más crecen",cat:"mentalidad"},
+  {n:74,t:"La mentalidad del dueño que frena el crecimiento digital de su propia empresa",cat:"mentalidad"},
+  {n:75,t:"Tener buena reputación en el sector no alcanza más: hay que comunicarla",cat:"mentalidad"},
+  {n:76,t:"Por qué esperar a tener todo perfecto antes de arrancar con marketing es el error más caro",cat:"mentalidad"},
+  {n:77,t:"El peligro de creer que porque siempre funcionó así, siempre va a funcionar",cat:"mentalidad"},
+  {n:78,t:"Delegar el marketing en el sobrino que sabe de redes: por qué sale caro",cat:"mentalidad"},
+  {n:79,t:"Por qué las empresas que más desconfían del marketing digital son las que más lo necesitan",cat:"mentalidad"},
+  {n:80,t:"La diferencia entre una empresa que comunica y una que solo vende: cuál gana en 5 años",cat:"mentalidad"},
+  {n:81,t:"Cómo usar Meta Ads para llegar al gerente de compras de una empresa mediana",cat:"herramientas"},
+  {n:82,t:"Por qué Google Search es la plataforma más subestimada en el B2B argentino",cat:"herramientas"},
+  {n:83,t:"Cómo armar un catálogo de productos en Mercado Libre para una empresa industrial",cat:"herramientas"},
+  {n:84,t:"Qué es el píxel de Meta y por qué tu empresa debería tenerlo instalado desde hoy",cat:"herramientas"},
+  {n:85,t:"Cómo automatizar el seguimiento de leads con herramientas simples y baratas",cat:"herramientas"},
+  {n:86,t:"Por qué el WhatsApp Business bien configurado puede ser tu mejor herramienta de cierre",cat:"herramientas"},
+  {n:87,t:"Cómo armar una campaña de email marketing que no termine en spam",cat:"herramientas"},
+  {n:88,t:"Qué es el ROAS y cómo saber si tu inversión publicitaria tiene sentido",cat:"herramientas"},
+  {n:89,t:"Cómo leer un reporte de campaña sin necesitar a tu agencia que te lo explique",cat:"herramientas"},
+  {n:90,t:"Por qué una landing page específica convierte más que mandar tráfico a tu web general",cat:"herramientas"},
+  {n:91,t:"El sector industrial argentino y la oportunidad digital que nadie está aprovechando",cat:"sector"},
+  {n:92,t:"Cómo venden las empresas industriales más exitosas del mundo y qué podemos copiar",cat:"sector"},
+  {n:93,t:"Por qué el B2B en Argentina tiene 5 años de retraso digital y cómo acelerarlo",cat:"sector"},
+  {n:94,t:"Las industrias que más están creciendo en digital en Argentina ahora mismo",cat:"sector"},
+  {n:95,t:"Cómo hablarle a un ingeniero, a un gerente de compras y a un CEO al mismo tiempo",cat:"sector"},
+  {n:96,t:"El lenguaje que funciona en comunicación industrial: técnico pero humano",cat:"sector"},
+  {n:97,t:"Por qué en el sector industrial la confianza se construye antes de la primera llamada",cat:"sector"},
+  {n:98,t:"Cómo se busca un proveedor industrial hoy: el recorrido real del comprador B2B",cat:"sector"},
+  {n:99,t:"La diferencia entre venderle a una empresa chica y a una corporación: estrategias distintas",cat:"sector"},
+  {n:100,t:"Por qué el nicho industrial es el futuro del marketing digital en Argentina",cat:"sector"}
+];
+
+const F=[
+  {n:1,t:"Talking head directo a cámara: explicás el concepto en 60 segundos sin rodeos",cat:"edu"},
+  {n:2,t:"Pizarra o anotador: escribís mientras hablás, ideal para pasos o comparaciones",cat:"edu"},
+  {n:3,t:"Pantalla dividida: vos explicando de un lado, ejemplo visual del otro",cat:"edu"},
+  {n:4,t:"Voz en off + texto en pantalla: no aparece tu cara, solo texto y tu voz",cat:"edu"},
+  {n:5,t:"Lista numerada en pantalla: cada punto aparece uno a uno mientras hablás",cat:"edu"},
+  {n:6,t:"Tutorial paso a paso: mostrás cómo hacer algo concreto",cat:"edu"},
+  {n:7,t:"Definición rápida en 20 segundos: abrís la puerta a profundizar en los comentarios",cat:"edu"},
+  {n:8,t:"Mito vs realidad: 'Todo el mundo cree X. La realidad es Y.'",cat:"edu"},
+  {n:9,t:"Antes y después: mostrás un estado malo y uno bueno, vos como puente",cat:"edu"},
+  {n:10,t:"Comparación de opciones: 'Meta o Google para B2B — depende de esto...'",cat:"edu"},
+  {n:11,t:"Pregunta provocadora de arranque que nadie se hace en el nicho",cat:"hook"},
+  {n:12,t:"Dato sorprendente + desarrollo: arrancás con estadística que nadie espera",cat:"hook"},
+  {n:13,t:"Confesión o admisión: 'La mayoría de agencias no te dice esto...'",cat:"hook"},
+  {n:14,t:"El error que todos cometen: 'Si hacés esto, estás perdiendo plata sin saberlo'",cat:"hook"},
+  {n:15,t:"'Tienes 20 segundos para...': desafío de atención desde el primer frame",cat:"hook"},
+  {n:16,t:"La pregunta que nadie se hace sobre su negocio digital",cat:"hook"},
+  {n:17,t:"Contraintuitivo: 'Más seguidores no significa más ventas. Te explico por qué.'",cat:"hook"},
+  {n:18,t:"El número que duele: cuánto pierde una empresa por no tener X",cat:"hook"},
+  {n:19,t:"Apertura con escenario reconocible para el nicho B2B",cat:"hook"},
+  {n:20,t:"'Lo que nadie te cuenta sobre...': genera curiosidad inmediata",cat:"hook"},
+  {n:21,t:"Respuesta a comentario real de otro video",cat:"conv"},
+  {n:22,t:"Tokcoment: respondés preguntas frecuentes del nicho una por una",cat:"conv"},
+  {n:23,t:"Modo selfie caminando: espontáneo, funciona para reflexiones rápidas",cat:"conv"},
+  {n:24,t:"Entrevista corta: le preguntás algo a un cliente, colega o experto",cat:"conv"},
+  {n:25,t:"Dueto o stitch: tomás un video de un tercero y lo analizás o respondés",cat:"conv"},
+  {n:26,t:"Reacción en tiempo real: te muestran un reporte, una web, un ad y das tu opinión",cat:"conv"},
+  {n:27,t:"'Esto me lo preguntaron esta semana': da contexto de gente real detrás",cat:"conv"},
+  {n:28,t:"POV: ponés al viewer en los zapatos del dueño de una empresa industrial",cat:"conv"},
+  {n:29,t:"Formato con mano señalando texto: guiás la vista, sensación de conversación",cat:"conv"},
+  {n:30,t:"Yo vs mi cliente: la diferencia entre lo que pide y lo que realmente necesita",cat:"conv"},
+  {n:31,t:"Top 3 errores que cometen las empresas B2B en digital",cat:"lista"},
+  {n:32,t:"Las 5 métricas que sí importan vs las que tu agencia muestra para distraerte",cat:"lista"},
+  {n:33,t:"Ranking de plataformas para B2B: cuál usar primero, cuál después",cat:"lista"},
+  {n:34,t:"'X cosas que haría si arrancara de cero una estrategia digital industrial'",cat:"lista"},
+  {n:35,t:"Lo mejor y lo peor de cada plataforma para tu tipo de negocio",cat:"lista"},
+  {n:36,t:"Checklist en pantalla: '¿Tu empresa tiene esto? Si no, perdés leads'",cat:"lista"},
+  {n:37,t:"'X señales de que necesitás cambiar de agencia'",cat:"lista"},
+  {n:38,t:"Los X tipos de clientes B2B y cómo hablarle a cada uno",cat:"lista"},
+  {n:39,t:"Caso de cliente (sin nombre si hace falta): 'Tuvimos un cliente que...'",cat:"narrativo"},
+  {n:40,t:"Historia personal: algo que viviste que ilustra el concepto",cat:"narrativo"},
+  {n:41,t:"Sketch corto: actuás dos roles (el dueño y la agencia, el cliente y el vendedor)",cat:"narrativo"},
+  {n:42,t:"Transformación: problema → proceso → resultado en 60 segundos",cat:"narrativo"},
+  {n:43,t:"'El día que me di cuenta de...': formato confesional que genera conexión",cat:"narrativo"},
+  {n:44,t:"Fracaso propio: algo que salió mal y qué aprendiste — genera credibilidad real",cat:"narrativo"},
+  {n:45,t:"Cronología: 'En 2020 hacían X. En 2025 hacen Y. En 2030...'",cat:"narrativo"},
+  {n:46,t:"Carrusel para Instagram: cada slide es un punto, el último es el CTA",cat:"visual"},
+  {n:47,t:"Texto en pantalla grande + voz en off minimalista: impacto visual con poco ruido",cat:"visual"},
+  {n:48,t:"Screen record: mostrás una herramienta, una cuenta de ads, un reporte real",cat:"visual"},
+  {n:49,t:"Time lapse o proceso en velocidad: armás una campaña o estrategia en cámara rápida",cat:"visual"},
+  {n:50,t:"Comentario fijado como gancho: el video es simple pero el pin amplía el contenido",cat:"visual"}
+];
+
+const LBL_C={dolor:"Dolor",educacion:"Educación",estrategia:"Estrategia",credibilidad:"Credibilidad",mentalidad:"Mentalidad",herramientas:"Herramientas",sector:"Sector"};
+const LBL_F={edu:"Educativo",hook:"Hook / Vacío",conv:"Conversacional",lista:"Lista",narrativo:"Narrativo",visual:"Visual"};
+
+let curC=null,curF=null,catC="all",catF="all",sC="",sF="";
+
+function generar(){
+  curC=C[Math.floor(Math.random()*C.length)];
+  curF=F[Math.floor(Math.random()*F.length)];
+  document.getElementById('g-c').textContent=curC.t;
+  document.getElementById('g-cn').innerHTML='<span class="cat-badge it-'+curC.cat+'">'+(LBL_C[curC.cat]||curC.cat)+'</span> · #'+curC.n;
+  document.getElementById('g-f').textContent=curF.t;
+  document.getElementById('g-fn').innerHTML='<span class="cat-badge it-'+curF.cat+'">'+(LBL_F[curF.cat]||curF.cat)+'</span> · #'+curF.n;
+  document.getElementById('btn-guion').disabled=false;
+  document.getElementById('guion-section').style.display='none';
+}
+
+async function generarGuion(){
+  if(!curC||!curF) return;
+  const sec=document.getElementById('guion-section');
+  const out=document.getElementById('guion-output');
+  const dot=document.getElementById('guion-dot');
+  const btn=document.getElementById('btn-guion');
+  sec.style.display='block';
+  dot.classList.remove('done');
+  out.textContent='';
+  btn.disabled=true;
+  out.innerHTML='<span style="color:var(--muted)">Generando guion</span><span class="cursor"></span>';
+
+  const prompt=`Sos el copywriter de Dilema Creative, agencia de marketing digital argentina especializada en empresas B2B e industriales. Escribís con tono directo, cercano, sin corporativo, en argentino (vos/te/querés).
+
+Generá un guion completo para redes sociales (TikTok/Instagram Reels) usando:
+- CONCEPTO: "${curC.t}"
+- FORMATO: "${curF.t}"
+
+El guion debe tener exactamente esta estructura, usando estos títulos literales:
+
+🎬 HOOK (primeras 3 segundos)
+[El gancho que detiene el scroll — una oración impactante, pregunta o dato que genera vacío de conocimiento. Adaptado al formato elegido.]
+
+📹 DESARROLLO
+[El cuerpo del video. 4-6 oraciones o pasos claros adaptados al formato. Lenguaje natural, argentino, sin tecnicismos innecesarios. Si el formato es lista, usá numeración. Si es narrativo, contá la historia.]
+
+🎯 CTA
+[Call to action. Rotá entre estas opciones según el concepto — elegí la más natural para este video:
+- "Seguime si sos dueño o gerente de una empresa industrial y querés crecer en digital."
+- "Comentá abajo si te pasó esto — te respondo."
+- "Guardá este video. Lo vas a necesitar cuando arranques tu estrategia digital."
+- "Mandame un mensaje si querés que auditemos tu presencia digital gratis."
+- "¿Te identificás? Seguime para más contenido sobre marketing B2B sin humo."]
+
+📝 DESCRIPCIÓN / CAPTION
+[Caption listo para copiar y pegar. Incluye 2-3 líneas de texto + emojis naturales + 5-8 hashtags relevantes para el nicho B2B/industrial argentino.]
+
+Respondé SOLO con el guion, sin explicaciones adicionales. Usá los emojis de los títulos tal como están.`;
+
+  try{
+    const resp=await fetch("/api/claude",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:1000,
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const data=await resp.json();
+    const texto=data.content?.find(b=>b.type==="text")?.text||"Error generando el guion.";
+    out.textContent='';
+    await typeWriter(out,texto,dot);
+  }catch(e){
+    out.textContent='Error al conectar con la IA. Revisá tu conexión.';
+  }
+  btn.disabled=false;
+}
+
+async function typeWriter(el,text,dot){
+  let i=0;
+  el.textContent='';
+  const speed=8;
+  return new Promise(resolve=>{
+    function tick(){
+      if(i<text.length){
+        el.textContent+=text[i++];
+        el.scrollIntoView?el.scrollIntoView({block:'nearest'}):null;
+        setTimeout(tick,speed);
+      } else {
+        dot.classList.add('done');
+        resolve();
+      }
+    }
+    tick();
+  });
+}
+
+function copiarGuion(){
+  const txt=document.getElementById('guion-output').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById('btn-copy');
+    btn.textContent='Copiado';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000);
+  });
+}
+
+// FILTERS / SEARCH
+function buildFilters(cats,labels,id,type){
+  const d=document.getElementById(id);
+  d.innerHTML='<button class="pill on" onclick="setFilter(\'all\',\''+type+'\')">Todos</button>';
+  Object.keys(cats).forEach(k=>{
+    d.innerHTML+='<button class="pill p-'+k+'" onclick="setFilter(\''+k+'\',\''+type+'\')">'+labels[k]+'</button>';
+  });
+}
+
+function setFilter(cat,type){
+  if(type==='c'){catC=cat;renderC();}
+  else{catF=cat;renderF();}
+  const id=type==='c'?'cf':'ff';
+  document.querySelectorAll('#'+id+' .pill').forEach(p=>p.classList.remove('on'));
+  const pills=document.querySelectorAll('#'+id+' .pill');
+  if(cat==='all'){pills[0].classList.add('on');}
+  else{
+    pills.forEach(p=>{
+      if(p.getAttribute('onclick')&&p.getAttribute('onclick').includes("'"+cat+"'")){p.classList.add('on');}
+    });
+  }
+}
+
+function filterC(v){sC=v;renderC();}
+function filterF(v){sF=v;renderF();}
+
+function renderC(){
+  const data=C.filter(x=>(catC==='all'||x.cat===catC)&&(sC===''||x.t.toLowerCase().includes(sC.toLowerCase())));
+  document.getElementById('cc').textContent=data.length+' concepto'+(data.length!==1?'s':'');
+  const bycat={};data.forEach(x=>{if(!bycat[x.cat])bycat[x.cat]=[];bycat[x.cat].push(x);});
+  let html='';
+  if(catC==='all'){
+    Object.keys(LBL_C).forEach(c=>{
+      if(!bycat[c])return;
+      html+='<div class="section-head">'+LBL_C[c]+'</div><div class="cards-grid">';
+      bycat[c].forEach(x=>html+=card(x,'c'));
+      html+='</div>';
+    });
+  } else {
+    html='<div class="cards-grid">';
+    data.forEach(x=>html+=card(x,'c'));
+    html+='</div>';
+  }
+  document.getElementById('cg').innerHTML=html||'<div class="empty">Sin resultados</div>';
+}
+
+function renderF(){
+  const data=F.filter(x=>(catF==='all'||x.cat===catF)&&(sF===''||x.t.toLowerCase().includes(sF.toLowerCase())));
+  document.getElementById('fc').textContent=data.length+' formato'+(data.length!==1?'s':'');
+  const bycat={};data.forEach(x=>{if(!bycat[x.cat])bycat[x.cat]=[];bycat[x.cat].push(x);});
+  let html='';
+  if(catF==='all'){
+    Object.keys(LBL_F).forEach(c=>{
+      if(!bycat[c])return;
+      html+='<div class="section-head">'+LBL_F[c]+'</div><div class="cards-grid">';
+      bycat[c].forEach(x=>html+=card(x,'f'));
+      html+='</div>';
+    });
+  } else {
+    html='<div class="cards-grid">';
+    data.forEach(x=>html+=card(x,'f'));
+    html+='</div>';
+  }
+  document.getElementById('fg').innerHTML=html||'<div class="empty">Sin resultados</div>';
+}
+
+function card(x,type){
+  const lbl=type==='c'?(LBL_C[x.cat]||x.cat):(LBL_F[x.cat]||x.cat);
+  return`<div class="item-card"><div class="item-num">#${x.n}</div><div class="item-body"><div class="item-txt">${x.t}</div><span class="item-tag it-${x.cat}">${lbl}</span></div></div>`;
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  const map={gen:0,conceptos:1,formatos:2};
+  document.querySelectorAll('.tab')[map[t]].classList.add('on');
+  document.getElementById('p-'+t).classList.add('on');
+}
+
+// INIT
+const uc={};C.forEach(x=>uc[x.cat]=true);
+const uf={};F.forEach(x=>uf[x.cat]=true);
+buildFilters(uc,LBL_C,'cf','c');
+buildFilters(uf,LBL_F,'ff','f');
+renderC();renderF();
+</script>
+</body>
+</html>
